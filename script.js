@@ -1,44 +1,45 @@
-// script.js - Complete Lightbox Gallery with Video Support
-document.addEventListener('DOMContentLoaded', () => {
-  // ========== LIGHTBOX GALLERY ==========
-  const lightbox = document.getElementById('lightbox');
-  const lightboxImage = document.getElementById('lightbox-image');
-  const lightboxVideo = document.getElementById('lightbox-video');
-  const lightboxCaption = document.getElementById('lightbox-caption');
-  const lightboxCounter = document.getElementById('lightbox-counter');
-  const lightboxClose = document.querySelector('.lightbox-close');
-  const lightboxPrev = document.querySelector('.lightbox-prev');
-  const lightboxNext = document.querySelector('.lightbox-next');
+document.addEventListener('DOMContentLoaded', function() {
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImage = document.getElementById('lightbox-image');
+  var lightboxVideo = document.getElementById('lightbox-video');
+  var lightboxCaption = document.getElementById('lightbox-caption');
+  var lightboxCounter = document.getElementById('lightbox-counter');
+  var lightboxClose = document.querySelector('.lightbox-close');
+  var lightboxPrev = document.querySelector('.lightbox-prev');
+  var lightboxNext = document.querySelector('.lightbox-next');
   
-  let galleryItems = [];
-  let currentIndex = 0;
+  var galleryItems = [];
+  var currentIndex = 0;
   
-  // Collect all gallery items
   function collectGalleryItems() {
     galleryItems = [];
-    const items = document.querySelectorAll('.gallery-item');
-    items.forEach((item, index) => {
-      const type = item.dataset.galleryType;
-      const caption = item.querySelector('.gallery-caption')?.textContent || '';
+    var items = document.querySelectorAll('.gallery-item');
+    items.forEach(function(item, index) {
+      var type = item.dataset.galleryType;
+      var captionEl = item.querySelector('.gallery-caption');
+      var caption = captionEl ? captionEl.textContent : '';
       
       if (type === 'video') {
-        const video = item.querySelector('video');
-        const videoSrc = video?.querySelector('source')?.src || '';
+        var video = item.querySelector('video');
+        var sourceEl = video ? video.querySelector('source') : null;
+        var videoSrc = sourceEl ? sourceEl.src : '';
         galleryItems.push({
-          index,
+          index: index,
           element: item,
           type: 'video',
           src: videoSrc,
-          caption,
+          caption: caption
         });
       } else {
-        const img = item.querySelector('img');
+        var img = item.querySelector('img');
+        var imgSrc = img ? img.src : '';
         galleryItems.push({
-          index,
+          index: index,
           element: item,
           type: 'image',
-          src: img?.src || '',
-          caption,
+          src: imgSrc,
+          caption: caption
         });
       }
     });
@@ -54,8 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
     lightbox.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     
-    // Pause all thumbnail videos
-    document.querySelectorAll('.gallery-thumb-video').forEach(v => v.pause());
+    var thumbVids = document.querySelectorAll('.gallery-thumb-video');
+    thumbVids.forEach(function(v) { v.pause(); });
   }
   
   function closeLightbox() {
@@ -63,33 +64,31 @@ document.addEventListener('DOMContentLoaded', () => {
     lightbox.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     
-    // Stop lightbox video
     lightboxVideo.pause();
     lightboxVideo.currentTime = 0;
     lightboxVideo.style.display = 'none';
     lightboxImage.style.display = 'none';
     
-    // Resume thumbnail video previews
-    document.querySelectorAll('.gallery-thumb-video').forEach(v => {
+    var thumbVids = document.querySelectorAll('.gallery-thumb-video');
+    thumbVids.forEach(function(v) {
       v.currentTime = 0;
-      v.play().catch(() => {});
+      v.play().catch(function() {});
     });
   }
   
   function updateLightboxContent() {
-    const item = galleryItems[currentIndex];
+    var item = galleryItems[currentIndex];
     if (!item) return;
     
-    // Hide both first
     lightboxImage.style.display = 'none';
     lightboxVideo.style.display = 'none';
     
     if (item.type === 'video') {
       lightboxVideo.style.display = 'block';
-      lightboxVideo.querySelector('source').src = item.src;
+      var sourceEl = lightboxVideo.querySelector('source');
+      sourceEl.src = item.src;
       lightboxVideo.load();
-      // Auto-play video in lightbox
-      lightboxVideo.play().catch(() => {});
+      lightboxVideo.play().catch(function() {});
     } else {
       lightboxImage.style.display = 'block';
       lightboxImage.src = item.src;
@@ -97,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     lightboxCaption.textContent = item.caption;
-    lightboxCounter.textContent = `${currentIndex + 1} / ${galleryItems.length}`;
+    lightboxCounter.textContent = (currentIndex + 1) + ' / ' + galleryItems.length;
   }
   
   function nextItem() {
@@ -114,10 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLightboxContent();
   }
   
-  // Event listeners for gallery items
-  document.querySelectorAll('.gallery-item').forEach((item, index) => {
-    item.addEventListener('click', (e) => {
-      // If clicking on video controls, don't open lightbox
+  var allGalleryItems = document.querySelectorAll('.gallery-item');
+  allGalleryItems.forEach(function(item, index) {
+    item.addEventListener('click', function(e) {
       if (e.target.tagName === 'VIDEO') {
         e.stopPropagation();
         return;
@@ -126,97 +124,77 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
-  // Lightbox controls
-  lightboxClose.addEventListener('click', (e) => {
+  lightboxClose.addEventListener('click', function(e) {
     e.stopPropagation();
     closeLightbox();
   });
   
-  lightboxNext.addEventListener('click', (e) => {
+  lightboxNext.addEventListener('click', function(e) {
     e.stopPropagation();
     nextItem();
   });
   
-  lightboxPrev.addEventListener('click', (e) => {
+  lightboxPrev.addEventListener('click', function(e) {
     e.stopPropagation();
     prevItem();
   });
   
-  // Close lightbox on overlay click
   document.querySelector('.lightbox-overlay').addEventListener('click', closeLightbox);
   
-  // Prevent lightbox content click from closing
-  document.querySelector('.lightbox-content').addEventListener('click', (e) => {
+  document.querySelector('.lightbox-content').addEventListener('click', function(e) {
     e.stopPropagation();
   });
   
-  // Keyboard navigation
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', function(e) {
     if (!lightbox.classList.contains('active')) return;
     
-    switch(e.key) {
-      case 'Escape':
-        closeLightbox();
-        break;
-      case 'ArrowRight':
-        nextItem();
-        break;
-      case 'ArrowLeft':
-        prevItem();
-        break;
-    }
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') nextItem();
+    if (e.key === 'ArrowLeft') prevItem();
   });
   
-  // Swipe support for mobile
-  let touchStartX = 0;
-  let touchEndX = 0;
+  var touchStartX = 0;
+  var touchEndX = 0;
   
-  lightbox.addEventListener('touchstart', (e) => {
+  lightbox.addEventListener('touchstart', function(e) {
     touchStartX = e.changedTouches[0].screenX;
   }, {passive: true});
   
-  lightbox.addEventListener('touchend', (e) => {
+  lightbox.addEventListener('touchend', function(e) {
     touchEndX = e.changedTouches[0].screenX;
     handleSwipe();
   }, {passive: true});
   
   function handleSwipe() {
-    const swipeThreshold = 50;
-    if (touchEndX < touchStartX - swipeThreshold) {
-      nextItem();
-    }
-    if (touchEndX > touchStartX + swipeThreshold) {
-      prevItem();
-    }
+    var threshold = 50;
+    if (touchEndX < touchStartX - threshold) nextItem();
+    if (touchEndX > touchStartX + threshold) prevItem();
   }
   
-  // Auto-play thumbnail videos when visible
-  const thumbVideos = document.querySelectorAll('.gallery-thumb-video');
+  var thumbVideos = document.querySelectorAll('.gallery-thumb-video');
   
   if ('IntersectionObserver' in window) {
-    const videoObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const video = entry.target;
+    var videoObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        var video = entry.target;
         if (entry.isIntersecting) {
-          video.play().catch(() => {});
+          video.play().catch(function() {});
         } else {
           video.pause();
         }
       });
     }, { threshold: 0.3 });
     
-    thumbVideos.forEach(video => videoObserver.observe(video));
+    thumbVideos.forEach(function(video) { videoObserver.observe(video); });
   } else {
-    // Fallback: play all thumbnails
-    thumbVideos.forEach(v => v.play().catch(() => {}));
+    thumbVideos.forEach(function(v) { v.play().catch(function() {}); });
   }
   
-  // ========== INTERSECTION OBSERVER FOR ANIMATIONS ==========
-  const animatedElements = document.querySelectorAll('[data-animate]');
+  var animatedElements = document.querySelectorAll('[data-animate]');
   
   if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
           observer.unobserve(entry.target);
@@ -224,31 +202,31 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
 
-    animatedElements.forEach(el => observer.observe(el));
+    animatedElements.forEach(function(el) { observer.observe(el); });
   } else {
-    animatedElements.forEach(el => el.classList.add('visible'));
+    animatedElements.forEach(function(el) { el.classList.add('visible'); });
   }
 
-  // ========== MOBILE MENU TOGGLE ==========
-  const toggle = document.getElementById('mobileToggle');
-  const nav = document.querySelector('.main-nav');
+  var toggle = document.getElementById('mobileToggle');
+  var nav = document.querySelector('.main-nav');
   
   if (toggle && nav) {
-    toggle.addEventListener('click', (e) => {
+    toggle.addEventListener('click', function(e) {
       e.stopPropagation();
       nav.classList.toggle('nav-open');
-      const isOpen = nav.classList.contains('nav-open');
+      var isOpen = nav.classList.contains('nav-open');
       toggle.setAttribute('aria-expanded', isOpen);
     });
     
-    nav.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => {
+    var navLinks = nav.querySelectorAll('.nav-link');
+    navLinks.forEach(function(link) {
+      link.addEventListener('click', function() {
         nav.classList.remove('nav-open');
         toggle.setAttribute('aria-expanded', 'false');
       });
     });
     
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', function(e) {
       if (!nav.contains(e.target) && !toggle.contains(e.target)) {
         nav.classList.remove('nav-open');
         toggle.setAttribute('aria-expanded', 'false');
@@ -256,9 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ========== TOUCH INTERACTIONS FOR CARDS ==========
-  const cards = document.querySelectorAll('.service-card, .contact-card');
-  cards.forEach(card => {
+  var cards = document.querySelectorAll('.service-card, .contact-card');
+  cards.forEach(function(card) {
     card.addEventListener('touchstart', function() {
       this.style.transform = 'translateY(-4px)';
     }, {passive: true});
@@ -267,21 +244,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ========== ACTIVE NAV LINK HIGHLIGHT ==========
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav-link');
+  var sections = document.querySelectorAll('section[id]');
+  var allNavLinks = document.querySelectorAll('.nav-link');
   
   function updateActiveLink() {
-    let current = '';
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 100;
+    var current = '';
+    sections.forEach(function(section) {
+      var sectionTop = section.offsetTop - 100;
       if (pageYOffset >= sectionTop) {
         current = section.getAttribute('id');
       }
     });
-    navLinks.forEach(link => {
+    allNavLinks.forEach(function(link) {
       link.classList.remove('active');
-      if (link.getAttribute('href') === `#${current}`) {
+      if (link.getAttribute('href') === '#' + current) {
         link.classList.add('active');
       }
     });
